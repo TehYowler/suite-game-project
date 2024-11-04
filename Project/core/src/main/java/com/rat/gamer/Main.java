@@ -18,13 +18,12 @@ public class Main extends ApplicationAdapter {
     @Override
     public void create() {
         batch = new SpriteBatch();
-        Texture image = new Texture("cat.png");
-        player = new Player(0,0,image, 100, 100,true,  1);
-        platform = new Platform(0,600,image,150,10);
-        platform.oscillateType = platform.backAndForth.run(-400,0,400f,0, 0.2f, 1);
-        //The scale of the player height and width depends on the scale of the image. Since the image is scaled down by
-        //5 (the original image is very large), we must also divide the values passed into the player dimensions by
-        //five if we want to fit the image to the player exactly.
+        Texture image = new Texture("cat.png"); //Located in the assets file
+        player = new Player(0, 0, image, 100, 100, true, 1); //Makes a new player object
+        platform = new Platform(0, 600, image, 150, 10); //Makes a new platform object
+        platform.oscillateType = platform.backAndForth.run(-400,0,400f,0, 0.2f, 1); //Makes the platform oscillate between two points.
+
+        //The scale of any GameplayObject image correlates directly to their width and height.
     }
 
     //These two draw functions draw an image. They are automatically centered at the middle of the window.
