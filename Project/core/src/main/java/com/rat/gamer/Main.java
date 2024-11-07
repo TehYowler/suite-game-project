@@ -1,28 +1,40 @@
 package com.rat.gamer;
 
 import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.Gdx;
 //import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.Input.Keys;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
     private SpriteBatch batch;
-    private Player player;
-    private Platform platform;
     private double time = 0;
+
+    public Scene currentLevel;
 
     @Override
     public void create() {
         batch = new SpriteBatch();
         Texture image = new Texture("cat.png"); //Located in the assets file
-        player = new Player(0, 0, image, 100, 100, true, 1); //Makes a new player object
-        platform = new Platform(0, 600, image, 150, 10); //Makes a new platform object
-        platform.oscillateType = platform.backAndForth.run(-400,0,400f,0, 0.2f, 1); //Makes the platform oscillate between two points.
 
+        currentLevel = new Scene();
+
+        currentLevel.addPlayer(
+            new Player(0, 0, image, 100, 100, true, 1)
+        );
+        //Adds to the scene's ArrayList of player objects.
+
+        currentLevel.addPlatform(
+            //new Platform(0, 600, image, 150, 10).oscillateFromTo(-400,0,400f,70, 0.2f, 1),
+            new Platform(0, 600, image, 150, 50).oscillateRound(-400,0,1,2,4),
+            new Platform(250, -240, image, 450, 200)
+        );
+        //Adds to the scene's ArrayList of platform objects.
+        //One oscillates back and forth between two points, while the other revolves in a circle around a point.
+        //One is just static.
+
+        //currentLevel.objectsPlatform.get(0)
         //The scale of any GameplayObject image correlates directly to their width and height.
     }
 
@@ -50,24 +62,22 @@ public class Main extends ApplicationAdapter {
         ScreenUtils.clear(0.75f, 0.15f, 0.2f, 1f); //Clears the screen by drawing the background each frame
         batch.begin();
 
-        //For left and right movement, takes the D and A keys.
-        if(Gdx.input.isKeyPressed(Keys.D)) player.moveX(false);
-        if(Gdx.input.isKeyPressed(Keys.A)) player.moveX(true);
+        currentLevel.tick();
 
-        player.tick(Gdx.input.isKeyPressed(Keys.W)); //Steps the player's movement, and provides the jump key boolean.
-        platform.tick();
-
-        if(player.y <= player.floor && Gdx.input.isKeyPressed(Keys.W)) {
-            //If the player is on (or below, for whatever reason) the floor, and presses the jump jey, they jump.
-            player.jump();
-        }
+        //player.tick(); //Steps the player's movement, and provides the jump key boolean.
+        //platform.tick();
 
         //draw(batch, player.getImage(), player.getX(), player.getY(), 0.2, 0.2);
         //draw(batch, player.getImage(), player.getX(), player.getY(), player.getWidth(), player.getHeight());
-        draw(batch, player);
-        draw(batch, platform);
-        //draw(batch, player.getImage(), player.getX(), player.getY(), player.getWidth() / player.getImage().getWidth() , player.getHeight() / player.getImage().getHeight());
-        //Draws the image of the player. This is where the image is downscaled by 5.
+        for(GameplayObject x : currentLevel.objectsGeneral) {
+            draw(batch,x);
+        }
+        for(GameplayObject x : currentLevel.objectsPlatform) {
+            draw(batch,x);
+        }
+        for(GameplayObject x : currentLevel.objectsPlayer) {
+            draw(batch,x);
+        }
         batch.end();
         time++;
     }
@@ -75,6 +85,8 @@ public class Main extends ApplicationAdapter {
     @Override
     public void dispose() {
         batch.dispose();
-        player.image.dispose();
+        for(GameplayObject x : currentLevel.objectsGeneral) {
+            x.image.dispose();
+        }
     }
 }
