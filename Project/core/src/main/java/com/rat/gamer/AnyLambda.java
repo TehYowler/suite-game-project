@@ -1,5 +1,5 @@
 package com.rat.gamer;
 
-public interface OscillateTick {
+public interface AnyLambda {
     void run();
 }
