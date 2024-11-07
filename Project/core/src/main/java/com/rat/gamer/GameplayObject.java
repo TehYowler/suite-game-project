@@ -25,7 +25,7 @@ public class GameplayObject {
         this.gravityStrength = gravityStrength;
     }
 
-    public void tick() {
+    public void tick(Scene scene) {
         if(useVelocity) {
             yVelocity -= gravityStrength/10;
             x += xVelocity;
