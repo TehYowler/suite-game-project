@@ -26,7 +26,7 @@ public class Main extends ApplicationAdapter {
         //Adds to the scene's ArrayList of player objects.
 
         currentLevel.addPlatform(
-            //new Platform(0, 600, image, 150, 10).oscillateFromTo(-400,0,400f,70, 0.2f, 1),
+            new Platform(0, 600, image, 150, 10).oscillateFromTo(-400,0,400f,70, 0.2f, 1),
             new Platform(0, 600, image, 150, 50).oscillateRound(-400,0,1,2,4),
             new Platform(250, -240, image, 450, 200)
         );
@@ -64,11 +64,6 @@ public class Main extends ApplicationAdapter {
 
         currentLevel.tick();
 
-        //player.tick(); //Steps the player's movement, and provides the jump key boolean.
-        //platform.tick();
-
-        //draw(batch, player.getImage(), player.getX(), player.getY(), 0.2, 0.2);
-        //draw(batch, player.getImage(), player.getX(), player.getY(), player.getWidth(), player.getHeight());
         for(GameplayObject x : currentLevel.objectsGeneral) {
             draw(batch,x);
         }
