@@ -19,6 +19,7 @@ public class GameplayObject {
     public float tintRed = 1;
     public float tintGreen = 1;
     public float tintBlue = 1;
+    public int order = 0;
 
     public GameplayObject(float x, float y, Texture image, int width, int height, boolean useVelocity, float gravityStrength) {
         this.width = width;
