@@ -1,22 +1,34 @@
 package com.rat.gamer;
 
 import com.badlogic.gdx.ApplicationAdapter;
-//import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.Gdx;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
     private SpriteBatch batch;
+    //    private Texture texture;
+//    private TextureRegion region;
+//    private Sprite sprite;
     private double time = 0;
 
-    public Scene currentLevel;
+    private Scene currentLevel;
 
     @Override
     public void create() {
         batch = new SpriteBatch();
         Texture image = new Texture("cat.png"); //Located in the assets file
+
+//        texture = new Texture(Gdx.files.internal("cat.png"));
+//        region = new TextureRegion(texture, 20, 20, 50, 50);
+//        sprite = new Sprite(texture, 20, 20, 50, 50);
+//        sprite.setPosition(100, 10);
+//        sprite.setColor(0, 0, 1, 1);
 
         currentLevel = new Scene();
 
@@ -33,6 +45,11 @@ public class Main extends ApplicationAdapter {
         //Adds to the scene's ArrayList of platform objects.
         //One oscillates back and forth between two points, while the other revolves in a circle around a point.
         //One is just static.
+
+        currentLevel.addGravity(
+            new GravityChange(100,200,image,50,50,false,0),
+            new GravityChange(-100,200,image,50,50,false,0)
+        );
 
         //currentLevel.objectsPlatform.get(0)
         //The scale of any GameplayObject image correlates directly to their width and height.
@@ -53,7 +70,9 @@ public class Main extends ApplicationAdapter {
         y -= (int)(ySize/2.0) - (int)(Global.HEIGHT/2);
         batch.draw(image, x, y, xSize, ySize );
     }
+
     public void draw(SpriteBatch batch, GameplayObject gameplayObject) {
+        batch.setColor(gameplayObject.tintRed, gameplayObject.tintGreen, gameplayObject.tintBlue, gameplayObject.opacity);
         batch.draw(gameplayObject.image, gameplayObject.x - (int)(gameplayObject.width/2.0) + (int)(Global.WIDTH/2), gameplayObject.y - (int)(gameplayObject.height/2.0) + (int)(Global.HEIGHT/2), gameplayObject.width, gameplayObject.height );
     }
 
@@ -61,26 +80,17 @@ public class Main extends ApplicationAdapter {
     public void render() {
         ScreenUtils.clear(0.75f, 0.15f, 0.2f, 1f); //Clears the screen by drawing the background each frame
         batch.begin();
-
-        currentLevel.tick();
-
-        for(GameplayObject x : currentLevel.objectsGeneral) {
-            draw(batch,x);
-        }
-        for(GameplayObject x : currentLevel.objectsPlatform) {
-            draw(batch,x);
-        }
-        for(GameplayObject x : currentLevel.objectsPlayer) {
-            draw(batch,x);
-        }
+            currentLevel.tick();
+            currentLevel.draw(batch);
         batch.end();
+
         time++;
     }
 
     @Override
     public void dispose() {
         batch.dispose();
-        for(GameplayObject x : currentLevel.objectsGeneral) {
+        for(GameplayObject x : currentLevel.allObjects()) {
             x.image.dispose();
         }
     }

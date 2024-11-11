@@ -3,14 +3,19 @@ package com.rat.gamer;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Player extends GameplayObject {
 
     private final float jumpPower = 1.1f; //How powerful the player's jumps are
 
     public final float floor; //A variable where the floor to rest at is.
+    public final float ceil; //A variable where the floor to rest at is.
 
     private boolean holdingUp = false;
+    private boolean holdingDown = false;
+
+    private boolean gravityInvert = false;
 
     private boolean sitting = false;
     private int extraJumps = 0;
@@ -21,7 +26,13 @@ public class Player extends GameplayObject {
         super(x, y, image, width, height, useVelocity, gravityStrength);
         previousX = x;
         previousY = y;
-        floor = height/2 - (float)Global.HEIGHT/2;
+        floor = height/2f - (float)Global.HEIGHT/2;
+        ceil = -height/2f + (float)Global.HEIGHT/2;
+    }
+
+    private void registerSit(boolean isSitting) {
+        this.sitting = isSitting;
+        if(isSitting) extraJumps = Math.max(1,extraJumps);
     }
 
     private boolean intersecting(GameplayObject object) {
@@ -50,6 +61,7 @@ public class Player extends GameplayObject {
         else if(Gdx.input.isKeyPressed(Input.Keys.D)) moveX(false);
 
         boolean tapUp = (!holdingUp && Gdx.input.isKeyPressed(Input.Keys.W));
+        boolean tapDown = (!holdingDown && Gdx.input.isKeyPressed(Input.Keys.S));
         /*
         If the player was not holding the W key the last time it was evaluated, but is holding it this frame, it is
         considered as a "tap" or a "press", as opposed to a hold, and stays true for only one frame.
@@ -58,6 +70,7 @@ public class Player extends GameplayObject {
         */
 
         holdingUp = Gdx.input.isKeyPressed(Input.Keys.W); //Gets if the player is holding up or not.
+        holdingDown = Gdx.input.isKeyPressed(Input.Keys.S); //Gets if the player is holding down or not.
 
         /*
         Steps the player's movement, moving them up and down and constantly making their y velocity do down due to gravity.
@@ -66,7 +79,11 @@ public class Player extends GameplayObject {
         This is simulated by decreasing the gravity when the jump key is held, and increasing it when it is released.
         The jump key boolean is supplied through the method, and overrides the inherited method.
         */
-        if(!this.sitting) yVelocity -= holdingUp ? gravityStrength/4.5f : gravityStrength/1.5f;
+
+        if(!this.sitting) {
+            if(!gravityInvert) yVelocity -= holdingUp ? gravityStrength / 4.5f : gravityStrength / 1.5f;
+            else yVelocity -= holdingDown ? -gravityStrength / 4.5f : -gravityStrength / 1.5f;
+        }
 
         //The xVelocity variable constantly decelerates, as shown by the division. This is to slow it down to a halt when
         //the player releases the A/D keys in a smooth and gradual way.
@@ -83,7 +100,9 @@ public class Player extends GameplayObject {
             x += xVelocity;
         }
 
-        sitting = y <= floor; //If the player is on the floor, set them to resting. Otherwise, makes it false.
+        registerSit(((y <= floor) && !gravityInvert) || ((y >= ceil) && gravityInvert) );
+        //If the player is on the floor with normal gravity, set them to resting. Otherwise, makes it false.
+        //If the player is on the ceiling with inverted gravity, set them to resting. Otherwise, makes it false.
 
         for(Platform x : scene.objectsPlatform) { //Iterates through every platform in the scene.
             float thresholdX = this.width/2 + x.width/2;
@@ -116,21 +135,32 @@ public class Player extends GameplayObject {
             if(Math.min(this.y,previousY) - thresholdY - leeway <= x.y && x.y <= Math.max(this.y,previousY) - thresholdY + leeway && betweenForY) {
                 this.y = Math.max(this.y,x.y + thresholdY + 0.5f);
                 this.yVelocity = Math.max(0,this.yVelocity);
-                this.sitting = true;
-                x.moveBind = this;
-                extraJumps = Math.max(1,extraJumps);
+                if(!gravityInvert) {
+                    registerSit(true);
+                    x.moveBind = this;
+                }
             }
             if(Math.min(this.y,previousY) + thresholdY - leeway <= x.y && x.y <= Math.max(this.y,previousY) + thresholdY + leeway && betweenForY) {
                 this.y = Math.min(this.y, x.y - thresholdY - 0.5f);
                 this.yVelocity = Math.min(0,this.yVelocity);
+
+                if(gravityInvert) {
+                    registerSit(true);
+                    x.moveBind = this;
+                }
             }
         }
 
-        if(sitting) {
-            extraJumps = Math.max(1,extraJumps);
-            //If the player is resting, reset the jump count.
+        for (GravityChange pickup : scene.objectsGravity) { //check for collision on gravity change object and changes gravity
+            if (intersecting(pickup) && pickup.exists()) {
+                gravityInvert = !gravityInvert;
+                pickup.remove(); // Remove pickup from the scene once collected
+                break;
+            }
         }
-        if(Gdx.input.isKeyPressed(Input.Keys.W)) {
+
+
+        if(Gdx.input.isKeyPressed(Input.Keys.W) && !gravityInvert) {
             if(sitting) {
                 jump();
             }
@@ -143,14 +173,33 @@ public class Player extends GameplayObject {
             //If the player jumps in the air, a double jump charge is used up if it can be.
             //If the player does multi jump charge in the air, they will not jump.
         }
+        else if(Gdx.input.isKeyPressed(Input.Keys.S) && gravityInvert) {
+            if(sitting) {
+                jump();
+            }
+            else if(extraJumps > 0 && tapDown) {
+                jump();
+                extraJumps--;
+            }
+            //Performs an inverted gravity jump.
+        }
 
         //And for y, it cannot go any lower than the floor (might not be final if there is a void or a place to fall).
-        y = Math.max(y, floor);
+        //And they cannot go any higher than the ceiling.
+        y = Math.clamp(y, floor, ceil);
+        //y = Math.min(y, ceil);
     }
+
+    public void draw(SpriteBatch batch) {
+        batch.setColor(this.tintRed, this.tintGreen, this.tintBlue, this.opacity);
+        float invertY = gravityInvert ? -1 : 1;
+        batch.draw(this.image, this.x - (int)(this.width/2.0) + (int)(Global.WIDTH/2), this.y - (int)(this.height/2.0)*invertY + (int)(Global.HEIGHT/2), this.width, invertY*this.height );
+    }
+
     public void moveX(boolean isLeft) { //Increases the x velocity either left or right, depending on the input.
         xVelocity += 1.0 * (isLeft ? -1 : 1);
     }
     public void jump() {
-        yVelocity = jumpPower * 10;
+        yVelocity = jumpPower * 10 * (gravityInvert ? -1 : 1);
     }
 }
