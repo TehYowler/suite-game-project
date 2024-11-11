@@ -4,6 +4,7 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 
 public class Scene {
 
@@ -13,6 +14,8 @@ public class Scene {
     public ArrayList<Player> objectsPlayer = new ArrayList<Player>();
     public ArrayList<Platform> objectsPlatform = new ArrayList<Platform>();
     public ArrayList<GravityChange> objectsGravity = new ArrayList<GravityChange>();
+
+    private int orderID = 0;
     //It has an ArrayList for each type of object.
     //EVEN THOUGH "objectsGeneral" ACCEPTS ALL TYPES OF "GameplayObject", CHECKS SUCH AS COLLISION CHECKS WILL NOT BE
     //PERFORMED ON OBJECTS IN IT. ONLY USE IT FOR VISUALS, NOT GAME LOGIC, SUCH AS PLAYERS OR PLATFORMS.
@@ -23,6 +26,7 @@ public class Scene {
         allObjects.addAll(objectsPlayer);
         allObjects.addAll(objectsPlatform);
         allObjects.addAll(objectsGravity);
+        allObjects.sort(Comparator.comparingInt(a -> a.order));
         return allObjects;
     }
 
@@ -39,17 +43,33 @@ public class Scene {
     }
 
     //Adds a certain type of object, accepts any number of parameters of the given type.
-    public void addGeneral(GameplayObject... objectAdd) {
-        for(GameplayObject x : objectAdd) objectsGeneral.add(x);
+    public GameplayObject[] addGeneral(GameplayObject... objectAdd) {
+        for(GameplayObject x : objectAdd) {
+            x.order = orderID; orderID++;
+            objectsGeneral.add(x);
+        }
+        return objectAdd;
     }
-    public void addPlayer(Player... objectAdd) {
-        for(Player x : objectAdd) objectsPlayer.add(x);
+    public Player[] addPlayer(Player... objectAdd) {
+        for(Player x : objectAdd) {
+            x.order = orderID; orderID++;
+            objectsPlayer.add(x);
+        }
+        return objectAdd;
     }
-    public void addPlatform(Platform... objectAdd) {
-        for(Platform x : objectAdd) objectsPlatform.add(x);
+    public Platform[] addPlatform(Platform... objectAdd) {
+        for(Platform x : objectAdd) {
+            x.order = orderID; orderID++;
+            objectsPlatform.add(x);
+        }
+        return objectAdd;
     }
-    public void addGravity(GravityChange... objectAdd) {
-        for(GravityChange x : objectAdd) objectsGravity.add(x);
+    public GravityChange[] addGravity(GravityChange... objectAdd) {
+        for(GravityChange x : objectAdd) {
+            x.order = orderID; orderID++;
+            objectsGravity.add(x);
+        }
+        return objectAdd;
     }
 
 }
