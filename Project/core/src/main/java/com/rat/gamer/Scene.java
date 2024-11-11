@@ -1,5 +1,8 @@
 package com.rat.gamer;
 
+import com.badlogic.gdx.Game;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+
 import java.util.ArrayList;
 
 public class Scene {
@@ -9,20 +12,29 @@ public class Scene {
     public ArrayList<GameplayObject> objectsGeneral = new ArrayList<GameplayObject>();
     public ArrayList<Player> objectsPlayer = new ArrayList<Player>();
     public ArrayList<Platform> objectsPlatform = new ArrayList<Platform>();
+    public ArrayList<GravityChange> objectsGravity = new ArrayList<GravityChange>();
     //It has an ArrayList for each type of object.
     //EVEN THOUGH "objectsGeneral" ACCEPTS ALL TYPES OF "GameplayObject", CHECKS SUCH AS COLLISION CHECKS WILL NOT BE
     //PERFORMED ON OBJECTS IN IT. ONLY USE IT FOR VISUALS, NOT GAME LOGIC, SUCH AS PLAYERS OR PLATFORMS.
 
+    public ArrayList<GameplayObject> allObjects() {
+        ArrayList<GameplayObject> allObjects = new ArrayList<GameplayObject>();
+        allObjects.addAll(objectsGeneral);
+        allObjects.addAll(objectsPlayer);
+        allObjects.addAll(objectsPlatform);
+        allObjects.addAll(objectsGravity);
+        return allObjects;
+    }
+
 
     public void tick() { //Ticks all objects in the scene forward.
-        for( GameplayObject x : objectsGeneral ) {
+        for( GameplayObject x : allObjects() ) {
             x.tick(this);
         }
-        for( Player x : objectsPlayer ) {
-            x.tick(this);
-        }
-        for( Platform x : objectsPlatform ) {
-            x.tick(this);
+    }
+    public void draw(SpriteBatch batch) { //Ticks all objects in the scene forward.
+        for( GameplayObject x : allObjects() ) {
+            x.draw(batch);
         }
     }
 
@@ -35,6 +47,9 @@ public class Scene {
     }
     public void addPlatform(Platform... objectAdd) {
         for(Platform x : objectAdd) objectsPlatform.add(x);
+    }
+    public void addGravity(GravityChange... objectAdd) {
+        for(GravityChange x : objectAdd) objectsGravity.add(x);
     }
 
 }
