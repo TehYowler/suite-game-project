@@ -1,2 +1,14 @@
+hotel.png
+flagGreen.png
+placeholderBG.png
+welcome.png
+flagRed.png
+gameover.png
+gravityChange.png
 libgdx.png
+spring.png
+holdJumpPlaceholder.png
 cat.png
+exitPlaceholder.png
+doubleJumpPlaceholder.png
+flagPlaceholder.png
