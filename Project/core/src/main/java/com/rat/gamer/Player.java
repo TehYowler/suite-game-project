@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Player extends GameplayObject {
 
-    private final float jumpPower = 1.1f; //How powerful the player's jumps are
+    public float jumpPower = 1.1f; //How powerful the player's jumps are
 
     public final float floor; //A variable where the floor to rest at is.
     public final float ceil; //A variable where the floor to rest at is.
@@ -22,12 +22,15 @@ public class Player extends GameplayObject {
     private float previousX;
     private float previousY;
 
-    public Player(float x, float y, Texture image, int width, int height, boolean useVelocity, float gravityStrength) {
-        super(x, y, image, width, height, useVelocity, gravityStrength);
+    private boolean movedLeft = false;
+
+    public Player(float x, float y, Texture image, int width, int height) {
+        super(x, y, image, width, height);
         previousX = x;
         previousY = y;
         floor = height/2f - (float)Global.HEIGHT/2;
         ceil = -height/2f + (float)Global.HEIGHT/2;
+        gravityStrength = 0.9f;
     }
 
     private void registerSit(boolean isSitting) {
@@ -56,6 +59,53 @@ public class Player extends GameplayObject {
 
 
     public void tick(Scene scene) {
+
+        if(Gdx.input.isKeyPressed(Input.Keys.R)) {
+            scene.restart = true;
+            return;
+        }
+
+        float flashing1 = (float)Math.sin(scene.getFrame()/20)/4f + 0.75f;
+        float flashing2 = (float)Math.sin(scene.getFrame()/4)/5f + 0.2f;
+
+        switch(this.extraJumps) {
+            case 0: {
+                this.tintRed = 0.8f;
+                this.tintGreen = 0.7f;
+                this.tintBlue = 0.7f;
+                break;
+            }
+            case 1: {
+                this.tintRed = 1;
+                this.tintGreen = 1;
+                this.tintBlue = 1;
+                break;
+            }
+            case 2: {
+                this.tintBlue = 0;
+                this.tintRed = 0;
+                this.tintGreen = flashing1;
+                break;
+            }
+            case 3: {
+                this.tintBlue = flashing1;
+                this.tintRed = 0;
+                this.tintGreen = 0;
+                break;
+            }
+            case 4: {
+                this.tintBlue = 0;
+                this.tintRed = flashing1;
+                this.tintGreen = 0;
+                break;
+            }
+            default: {
+                this.tintBlue = flashing1*1.4f;
+                this.tintRed = flashing2*3.2f;
+                this.tintGreen = 0;
+            }
+        }
+
 
         if(Gdx.input.isKeyPressed(Input.Keys.A)) moveX(true);
         else if(Gdx.input.isKeyPressed(Input.Keys.D)) moveX(false);
@@ -88,7 +138,7 @@ public class Player extends GameplayObject {
         //The xVelocity variable constantly decelerates, as shown by the division. This is to slow it down to a halt when
         //the player releases the A/D keys in a smooth and gradual way.
         // Furthermore, it is capped at a speed of seven, as shown by the clamp values (may not be a final feature to cap it).
-        xVelocity = Math.clamp((float)(xVelocity/1.16),-7,7);
+        xVelocity = xVelocity/1.16f;
 
 
         previousX = x;
@@ -100,7 +150,7 @@ public class Player extends GameplayObject {
             x += xVelocity;
         }
 
-        registerSit(((y <= floor) && !gravityInvert) || ((y >= ceil) && gravityInvert) );
+        registerSit(((y <= floor) && !gravityInvert && scene.hasFloor) || ((y >= ceil) && gravityInvert && scene.hasCeiling) );
         //If the player is on the floor with normal gravity, set them to resting. Otherwise, makes it false.
         //If the player is on the ceiling with inverted gravity, set them to resting. Otherwise, makes it false.
 
@@ -159,6 +209,32 @@ public class Player extends GameplayObject {
             }
         }
 
+        for (Flag flag : scene.objectsFlag) { //check for collision on gravity change object and changes gravity
+            if (intersecting(flag) && !flag.raised) {
+                flag.raised = true;
+                flag.image = new Texture("flagGreen.png");
+                break;
+            }
+        }
+
+        for (LevelExit exit : scene.objectsExit) { //check for collision on gravity change object and changes gravity
+            if (intersecting(exit)) {
+                boolean canExit = true;
+                for (Flag flag : scene.objectsFlag) { //check for collision on gravity change object and changes gravity
+                    canExit = canExit && flag.raised;
+                }
+                if(canExit) scene.next = true;
+            }
+        }
+
+        for (JumpRefill pickup : scene.objectsRefill) { //check for collision on gravity change object and changes gravity
+            if (intersecting(pickup) && pickup.exists()) {
+                extraJumps++;
+                pickup.remove(); // Remove pickup from the scene once collected
+                break;
+            }
+        }
+
 
         if(Gdx.input.isKeyPressed(Input.Keys.W) && !gravityInvert) {
             if(sitting) {
@@ -186,18 +262,25 @@ public class Player extends GameplayObject {
 
         //And for y, it cannot go any lower than the floor (might not be final if there is a void or a place to fall).
         //And they cannot go any higher than the ceiling.
-        y = Math.clamp(y, floor, ceil);
+        if(scene.hasFloor) y = Math.max(y, floor);
+        else if(y < -Global.HEIGHT/2f-height/2f-200) scene.dead = true;
+        if(scene.hasCeiling) y = Math.min(y, ceil);
+        else if(y > Global.HEIGHT/2f+height/2f+200) scene.dead = true;
+
+        x = Math.clamp(x, -Global.WIDTH/2f+width/2f, Global.WIDTH/2f-width/2f);
         //y = Math.min(y, ceil);
     }
 
     public void draw(SpriteBatch batch) {
         batch.setColor(this.tintRed, this.tintGreen, this.tintBlue, this.opacity);
         float invertY = gravityInvert ? -1 : 1;
-        batch.draw(this.image, this.x - (int)(this.width/2.0) + (int)(Global.WIDTH/2), this.y - (int)(this.height/2.0)*invertY + (int)(Global.HEIGHT/2), this.width, invertY*this.height );
+        float invertX = movedLeft ? -1 : 1;
+        batch.draw(this.image, this.x - (int)(this.width/2.0)*invertX + (int)(Global.WIDTH/2), this.y - (int)(this.height/2.0)*invertY + (int)(Global.HEIGHT/2), this.width*invertX, invertY*this.height );
     }
 
     public void moveX(boolean isLeft) { //Increases the x velocity either left or right, depending on the input.
-        xVelocity += 1.0 * (isLeft ? -1 : 1);
+        xVelocity += (width/100f) * (isLeft ? -1 : 1);
+        movedLeft = isLeft;
     }
     public void jump() {
         yVelocity = jumpPower * 10 * (gravityInvert ? -1 : 1);
