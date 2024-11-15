@@ -1,14 +1,14 @@
 package com.rat.gamer;
 
 import com.badlogic.gdx.ApplicationAdapter;
-import com.badlogic.gdx.graphics.GL20;
+//import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.graphics.g2d.Sprite;
+//import com.badlogic.gdx.graphics.g2d.TextureRegion;
+//import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.InputProcessor;
+//import com.badlogic.gdx.Gdx;
+//import com.badlogic.gdx.InputProcessor;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Main extends ApplicationAdapter {
@@ -19,6 +19,8 @@ public class Main extends ApplicationAdapter {
 
     private Scene currentLevel;
     public int levelNumber;
+
+
 
     public void addBasic() {
         Texture background = new Texture("hotel.png");
@@ -42,6 +44,15 @@ public class Main extends ApplicationAdapter {
             //Gameover screen
         }
         else {
+
+            final Texture placeholder = new Texture("catPlaceholder.png");
+            final Texture refill = new Texture("spring.png");
+            final Texture gravity = new Texture("gravityChange.png");
+            final Texture flagBase = new Texture("flagRed.png");
+            final Texture platform = new Texture("platform.png");
+            final Texture playerTexture = new Texture("playerkid.png");
+            final Texture exit = new Texture("Exitdoortwo.png");
+
             switch (levelNumber) {
                 case 0: { //Starting screen
                     currentLevel = new Scene(true, true, this);
@@ -55,22 +66,18 @@ public class Main extends ApplicationAdapter {
 
                 case 999: {
                     currentLevel = new Scene(true, false, this);
-                    Texture placeholder = new Texture("cat.png");
-                    Texture refill = new Texture("spring.png");
-                    Texture gravity = new Texture("gravityChange.png");
-                    Texture flagBase = new Texture("flagRed.png");
 
                     addBasic();
 
                     currentLevel.addPlayer(
-                        new Player(0, 0, placeholder, 100, 100)
+                        new Player(0, 0, playerTexture, 50, 150)
                     );
                     //Adds to the scene's ArrayList of player objects.
 
                     currentLevel.addPlatform(
-                        new Platform(0, 600, placeholder, 150, 10).oscillateFromTo(-400,0,400f,70, 0.2f, 1),
-                        new Platform(0, 600, placeholder, 150, 50).oscillateRound(-400,0,1,2,4),
-                        new Platform(250, -240, placeholder, 450, 200)
+                        new Platform(0, 600, platform, 150, 10).oscillateFromTo(-400,0,400f,70, 0.2f, 1),
+                        new Platform(0, 600, platform, 150, 50).oscillateRound(-400,0,1,2,4),
+                        new Platform(150, -240, platform, 450, 200)
                     );
                     //Adds to the scene's ArrayList of platform objects.
                     //One oscillates back and forth between two points, while the other revolves in a circle around a point.
@@ -94,58 +101,55 @@ public class Main extends ApplicationAdapter {
                     );
 
                     currentLevel.addExit(
-                        new LevelExit(0,-450,placeholder,75,75)
+                        new LevelExit(0,-450,exit,100,200)
                     );
 
                     break;
                 }
                 case 1: {
                     currentLevel = new Scene(true, true, this);
-                    Texture placeholder = new Texture("cat.png");
-                    Texture instruction = new Texture("exitPlaceholder.png");
+                    Texture instruction = new Texture("moveTutorial.png");
 
                     addBasic();
 
                     currentLevel.addGeneral(
-                        new Platform(220, 0, instruction, 800, 400)
+                        new Platform(-200, 100, instruction, 1800, 900)
                     );
 
                     Player player = currentLevel.addPlayer(
-                        new Player(-600, -500, placeholder, 400, 400)
+                        new Player(-600, -500, playerTexture, 150, 400)
                     )[0];
                     player.jumpPower = 0;
 
                     currentLevel.addExit(
-                        new LevelExit(750, -350, placeholder, 300, 300)
+                        new LevelExit(750, -300, exit, 200, 400)
                     );
 
                     break;
                 }
                 case 2: {
                     currentLevel = new Scene(true, true, this);
-                    Texture placeholder = new Texture("cat.png");
-                    Texture instruction = new Texture("flagPlaceholder.png");
-                    Texture flagBase = new Texture("flagRed.png");
+                    Texture instruction = new Texture("jumpTutorial.png");
 
                     addBasic();
 
                     currentLevel.addGeneral(
-                        new Platform(220, 0, instruction, 800, 400)
+                        new Platform(-200, 100, instruction, 1800, 900)
                     );
 
                     Player player = currentLevel.addPlayer(
-                        new Player(-600, -500, placeholder, 400, 400)
+                        new Player(-600, -500, playerTexture, 150, 400)
                     )[0];
 
                     player.gravityStrength = 1.2f;
                     player.jumpPower = 1.6f;
 
                     currentLevel.addExit(
-                        new LevelExit(750, -350, placeholder, 300, 300)
+                        new LevelExit(750, -300, exit, 200, 400)
                     );
 
                     currentLevel.addFlag(
-                        new Flag(-250, 140, flagBase, 300, 300)
+                        new Flag(-550, 140, flagBase, 300, 300)
                     );
 
 
@@ -153,26 +157,24 @@ public class Main extends ApplicationAdapter {
                 }
                 case 3: {
                     currentLevel = new Scene(true, true, this);
-                    Texture placeholder = new Texture("cat.png");
-                    Texture instruction = new Texture("holdJumpPlaceholder.png");
-                    Texture flagBase = new Texture("flagRed.png");
+                    Texture instruction = new Texture("holdTutorial.png");
 
                     addBasic();
 
                     currentLevel.addGeneral(
-                        new Platform(320, 0, instruction, 800, 400)
+                        new Platform(-200, 100, instruction, 1800, 900)
                     );
 
-                    Player player = currentLevel.addPlayer(
-                        new Player(-600, -500, placeholder, 250, 250)
-                    )[0];
+                    currentLevel.addPlayer(
+                        new Player(-600, -500, playerTexture, 83, 250)
+                    );
 
                     currentLevel.addExit(
-                        new LevelExit(750, -400, placeholder, 200, 200)
+                        new LevelExit(750, -400, exit, 133, 266)
                     );
 
                     currentLevel.addFlag(
-                        new Flag(-250, 80, flagBase, 200, 200)
+                        new Flag(-550, 80, flagBase, 200, 200)
                     );
 
 
@@ -180,26 +182,116 @@ public class Main extends ApplicationAdapter {
                 }
                 case 4: {
                     currentLevel = new Scene(true, true, this);
-                    Texture placeholder = new Texture("cat.png");
-                    Texture instruction = new Texture("doubleJumpPlaceholder.png");
-                    Texture flagBase = new Texture("flagRed.png");
+                    Texture instruction = new Texture("doubleJump.png");
 
                     addBasic();
 
                     currentLevel.addGeneral(
-                        new Platform(320, 0, instruction, 800, 400)
+                        new Platform(-200, 100, instruction, 1800, 900)
                     );
 
-                    Player player = currentLevel.addPlayer(
-                        new Player(-600, -500, placeholder, 250, 250)
-                    )[0];
+                    currentLevel.addPlayer(
+                        new Player(-600, -500, playerTexture, 83, 250)
+                    );
 
                     currentLevel.addExit(
-                        new LevelExit(750, -400, placeholder, 200, 200)
+                        new LevelExit(750, -400, exit, 133, 266)
                     );
 
                     currentLevel.addFlag(
-                        new Flag(-250, 250, flagBase, 200, 200)
+                        new Flag(-550, 250, flagBase, 200, 200)
+                    );
+
+
+                    break;
+                }
+                case 5: {
+                    currentLevel = new Scene(true, true, this);
+
+                    addBasic();
+
+                    Player player = currentLevel.addPlayer(
+                        new Player(-600, -500, playerTexture, 50, 150)
+                    )[0];
+                    player.jumpPower = 0.8f;
+
+                    currentLevel.addPlatform(
+                        new Platform(-200,-300,platform,360,20)
+                    );
+
+                    currentLevel.addExit(
+                        new LevelExit(750, -440, exit, 100, 200)
+                    );
+
+                    currentLevel.addFlag(
+                        new Flag(0, 50, flagBase, 150, 150)
+                    );
+
+
+                    break;
+                }
+                case 6: {
+                    currentLevel = new Scene(true, true, this);
+
+                    addBasic();
+
+                    Player player = currentLevel.addPlayer(
+                        new Player(-860, -500, playerTexture, 50, 150)
+                    )[0];
+                    player.jumpPower = 0.8f;
+
+                    currentLevel.addPlatform(
+                        new Platform(-300,-300,platform,360,20),
+                        new Platform(100,-100,platform,360,20),
+                        new Platform(-475,55,platform,10,700)
+                    );
+
+                    currentLevel.addExit(
+                        new LevelExit(0, -440, exit, 100, 200)
+                    );
+
+                    currentLevel.addFlag(
+                        new Flag(0, 50, flagBase, 150, 150),
+                        new Flag(700, 150, flagBase, 150, 150)
+                    );
+
+
+                    break;
+                }
+                case 7: {
+                    currentLevel = new Scene(true, true, this);
+
+                    Texture instruction = new Texture("jumpRefill.png");
+                    Texture instructionRetry = new Texture("retry.png");
+
+                    addBasic();
+
+                    currentLevel.addGeneral(
+                        new Platform(-600, 100, instruction, 1800, 900),
+                        new Platform(600, -300, instructionRetry, 600, 300)
+                    );
+
+                    Player player = currentLevel.addPlayer(
+                        new Player(-860, -500, playerTexture, 50, 150)
+                    )[0];
+                    player.jumpPower = 0.8f;
+
+                    currentLevel.addPlatform(
+                        new Platform(-600,-300,platform,160,20),
+                        new Platform(500,0,platform,160,20)
+                    );
+
+                    currentLevel.addExit(
+                        new LevelExit(0, -440, exit, 100, 200)
+                    );
+
+                    currentLevel.addFlag(
+                        new Flag(550, 80, flagBase, 150, 150)
+                    );
+
+                    currentLevel.addRefill(
+                        new JumpRefill(100, 100, refill, 150, 150)
+                        //,new JumpRefill(700, 150, placeholder, 150, 150)
                     );
 
 
@@ -207,12 +299,9 @@ public class Main extends ApplicationAdapter {
                 }
                 default: {
                     currentLevel = new Scene(true, true, this);
-                    Texture instruction = new Texture("exitPlaceholder.png");
+                    Texture instruction = new Texture("win.png");
                     currentLevel.addGeneral(
-                        new Platform(220, 220, instruction, 800, 400),
-                        new Platform(-220, 220, instruction, 800, 400),
-                        new Platform(-220, -220, instruction, 800, 400),
-                        new Platform(220, -220, instruction, 800, 400)
+                        new Platform(0, 0, instruction, 1920, 1080)
                     );
                 }
             }
@@ -223,7 +312,7 @@ public class Main extends ApplicationAdapter {
     public void create() {
         batch = new SpriteBatch();
 
-        swapLevel(0);
+        swapLevel(999);
 
 
 
