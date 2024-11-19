@@ -211,8 +211,7 @@ public class Player extends GameplayObject {
 
         for (Flag flag : scene.objectsFlag) { //check for collision on gravity change object and changes gravity
             if (intersecting(flag) && !flag.raised) {
-                flag.raised = true;
-                flag.image = new Texture("flagGreen.png");
+                flag.raise();
                 break;
             }
         }
@@ -262,9 +261,15 @@ public class Player extends GameplayObject {
 
         //And for y, it cannot go any lower than the floor (might not be final if there is a void or a place to fall).
         //And they cannot go any higher than the ceiling.
-        if(scene.hasFloor) y = Math.max(y, floor);
+        if(scene.hasFloor) {
+            y = Math.max(y, floor);
+            if(y == floor) yVelocity = Math.max(yVelocity,0);
+        }
         else if(y < -Global.HEIGHT/2f-height/2f-200) scene.dead = true;
-        if(scene.hasCeiling) y = Math.min(y, ceil);
+        if(scene.hasCeiling) {
+            y = Math.min(y, ceil);
+            if(y == ceil) yVelocity = Math.min(yVelocity,0);
+        }
         else if(y > Global.HEIGHT/2f+height/2f+200) scene.dead = true;
 
         x = Math.clamp(x, -Global.WIDTH/2f+width/2f, Global.WIDTH/2f-width/2f);
@@ -279,7 +284,7 @@ public class Player extends GameplayObject {
     }
 
     public void moveX(boolean isLeft) { //Increases the x velocity either left or right, depending on the input.
-        xVelocity += (width/100f) * (isLeft ? -1 : 1);
+        xVelocity += (width/50f) * (isLeft ? -1 : 1);
         movedLeft = isLeft;
     }
     public void jump() {
