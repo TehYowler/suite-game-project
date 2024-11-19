@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.Texture;
 
 public class JumpRefill extends GameplayObject {
     private boolean inScene = true;
+    public AnyLambda onCollect = null;
     public JumpRefill(float x, float y, Texture image, int width, int height) {
         super(x, y, image, width, height);
         tintRed = 0f;
@@ -14,6 +15,7 @@ public class JumpRefill extends GameplayObject {
     }
     public void remove() {
         inScene = false;
+        if(onCollect != null) onCollect.run();
     }
     public void tick(Scene scene) {
         if(!inScene) opacity = (float)Math.max(0,opacity - 0.02);
