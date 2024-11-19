@@ -23,10 +23,45 @@ public class Main extends ApplicationAdapter {
 
 
     public void addBasic() {
-        Texture background = new Texture("hotel.png");
+
+        int bgNum = (int)((float)levelNumber/4f) % 3;
+
+        Texture background;
+
+        switch(bgNum) {
+            case 1: {
+                background = new Texture("lobby.png");
+                break;
+            }
+            case 2: {
+                background = new Texture("lobby2.png");
+                break;
+            }
+            case 0:
+            default: {
+                background = new Texture("hotel.png");
+                break;
+            }
+        }
+
+
+        Texture pit = new Texture("pit.png");
+
         GameplayObject backgroundShow = currentLevel.addGeneral(
             new Platform(0, 0, background, 1920, 1080)
         )[0];
+
+        if(!currentLevel.hasCeiling) {
+            GameplayObject ceilPit = currentLevel.addGeneral(
+                new Platform(0, 0, pit, -1920, -1080)
+            )[0];
+        }
+        if(!currentLevel.hasFloor) {
+            GameplayObject floorPit = currentLevel.addGeneral(
+                new Platform(0, 0, pit, 1920, 1080)
+            )[0];
+        }
+
         backgroundShow.tintBlue = 0.8f;
         backgroundShow.tintRed = 0.6f;
         backgroundShow.tintGreen = 0.6f;
@@ -282,7 +317,7 @@ public class Main extends ApplicationAdapter {
                     );
 
                     currentLevel.addExit(
-                        new LevelExit(0, -440, exit, 100, 200)
+                        new LevelExit(800, 150, exit, 100, 200)
                     );
 
                     currentLevel.addFlag(
@@ -294,6 +329,157 @@ public class Main extends ApplicationAdapter {
                         //,new JumpRefill(700, 150, placeholder, 150, 150)
                     );
 
+
+                    break;
+                }
+                case 8: {
+                    currentLevel = new Scene(true, true, this);
+                    addBasic();
+
+                    Player player = currentLevel.addPlayer(
+                        new Player(-860, -500, playerTexture, 50, 150)
+                    )[0];
+                    player.jumpPower = 0.8f;
+
+                    currentLevel.addGravity(
+                        new GravityChange(-500, -440, gravity, 100, 110),
+                        new GravityChange(500, 440, gravity, 100, 110)
+                    );
+
+                    currentLevel.addExit(
+                        new LevelExit(480, -140, exit, 100, 200)
+                    );
+
+                    currentLevel.addFlag(
+                        new Flag(-300, 450, flagBase, 150, 150)
+                    );
+
+                    break;
+                }
+                case 9: {
+                    currentLevel = new Scene(true, false, this);
+                    addBasic();
+
+                    Texture warn = new Texture("voidWarn.png");
+
+                    currentLevel.addGeneral(
+                        new Platform(-100,0,warn,1200,600)
+                    );
+
+                    Player player = currentLevel.addPlayer(
+                        new Player(-860, -500, playerTexture, 50, 150)
+                    )[0];
+                    player.jumpPower = 0.8f;
+
+                    currentLevel.addPlatform(
+                        new Platform(500, 540, platform, 400, 60).oscillateFromTo(500,440,-500,440,1,1)
+                    );
+
+                    currentLevel.addGravity(
+                        new GravityChange(-500, -440, gravity, 100, 110),
+                        new GravityChange(500, 270, gravity, 100, 110)
+                    );
+
+                    currentLevel.addExit(
+                        new LevelExit(0, -440, exit, 100, 200)
+                    );
+
+                    currentLevel.addFlag(
+                        new Flag(500, 350, flagBase, 150, 150),
+                        new Flag(-300, 350, flagBase, 150, 150)
+                    );
+
+                    break;
+                }
+                case 10: {
+                    currentLevel = new Scene(true, true, this);
+                    addBasic();
+
+                    Texture instruction = new Texture("overchargeTutorial.png");
+
+                    currentLevel.addGeneral(
+                        new Platform(200, -300, instruction, 1800, 900)
+                    );
+
+                    Player player = currentLevel.addPlayer(
+                        new Player(-860, -500, playerTexture, 50, 150)
+                    )[0];
+                    player.jumpPower = 0.8f;
+
+                    currentLevel.addPlatform(
+                        new Platform(0, 0, platform, 400, 30)
+                    );
+
+                    currentLevel.addRefill(
+                        new JumpRefill(-550,-400,refill,50,50),
+                        new JumpRefill(-450,-300,refill,50,50),
+                        new JumpRefill(-350,-200,refill,50,50),
+                        new JumpRefill(-250,-100,refill,50,50)
+                    );
+
+                    currentLevel.addExit(
+                        new LevelExit(0, -440, exit, 100, 200)
+                    );
+
+                    currentLevel.addFlag(
+                        new Flag(500, 350, flagBase, 150, 150),
+                        new Flag(-300, 350, flagBase, 150, 150)
+                    );
+
+                    break;
+                }
+                case 11: {
+                    currentLevel = new Scene(false, false, this);
+                    addBasic();
+
+                    Player player = currentLevel.addPlayer(
+                        new Player(-860, -300, playerTexture, 50, 150)
+                    )[0];
+                    player.jumpPower = 0.8f;
+
+                    currentLevel.addPlatform(
+                        new Platform(-700, -540, platform, 500, 30),
+                        new Platform(-500, -400, platform, 400, 30),
+                        new Platform(-300, -255, platform, 40, 600),
+                        new Platform(-100, 200, platform, 80, 1000),
+                        new Platform(100, -200, platform, 80, 1000),
+                        new Platform(-100, 840, platform, 200, 30).oscillateFromTo(0,-540,-200,-540,0.3f,1.2f),
+                        new Platform(-100, -840, platform, 200, 30).oscillateFromTo(200,540,0,540,0.3f,0.8f)
+                    );
+
+                    currentLevel.addRefill(
+                        new JumpRefill(-500,-200,refill,50,50),
+                        new JumpRefill(400,400,refill,50,50),
+                        new JumpRefill(700,100,refill,50,50),
+                        new JumpRefill(400,-200,refill,50,50),
+                        new JumpRefill(650,-300,refill,50,50)
+                    );
+
+                    currentLevel.addGravity(
+                        new GravityChange(0, -240, gravity, 100, 100)
+                    );
+
+                    Flag flagTrigger = currentLevel.addFlag(
+                        new Flag(850, -450, flagBase, 100, 150)
+                    )[0];
+
+                    flagTrigger.onCollect = () -> {
+                        currentLevel.addPlatform(
+                            new Platform(850, -270, platform, 300, 50),
+                            new Platform(-550, 300, platform, 80, 800),
+                            new Platform(-400, -840, platform, 50, 30).oscillateRound(-300, 400, 2, 0.1f, 2)
+                        );
+                        currentLevel.addGravity(
+                            new GravityChange(-200, -240, gravity, 100, 100),
+                            new GravityChange(0, 250, gravity, 100, 100),
+                            new GravityChange(-400, 0, gravity, 100, 100)
+                        );
+                        currentLevel.addExit(
+                            new LevelExit(-600,-290,exit,100,200)
+                        );
+                    };
+
+                    //flagTrigger.raise();
 
                     break;
                 }
@@ -312,9 +498,7 @@ public class Main extends ApplicationAdapter {
     public void create() {
         batch = new SpriteBatch();
 
-        swapLevel(999);
-
-
+        swapLevel(0);
 
         //currentLevel.objectsPlatform.get(0)
         //The scale of any GameplayObject image correlates directly to their width and height.
