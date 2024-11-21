@@ -5,6 +5,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
+import java.util.ArrayList;
+
 public class Player extends GameplayObject {
 
     public float jumpPower = 1.1f; //How powerful the player's jumps are
@@ -19,8 +21,9 @@ public class Player extends GameplayObject {
 
     private boolean sitting = false;
     private int extraJumps = 0;
-    private float previousX;
-    private float previousY;
+    public float previousX;
+    public float previousY;
+    private ArrayList<Platform> intersectCount = new ArrayList<>();
 
     private boolean movedLeft = false;
 
@@ -39,10 +42,22 @@ public class Player extends GameplayObject {
     }
 
     private boolean intersecting(GameplayObject object) {
-            float thresholdX = this.width/2 + object.width/2;
-            float thresholdY = this.height/2 + object.height/2;
+        float thresholdX = this.width/2 + object.width/2;
+        float thresholdY = this.height/2 + object.height/2;
 
-            return Math.abs(this.x - object.x) <= thresholdX && Math.abs(this.y - object.y) <= thresholdY;
+        return Math.abs(this.x - object.x) <= thresholdX && Math.abs(this.y - object.y) <= thresholdY;
+    }
+    private boolean intersecting(GameplayObject object, float leeway) {
+        float thresholdX = this.width/2 + object.width/2 + leeway;
+        float thresholdY = this.height/2 + object.height/2 + leeway;
+
+        return Math.abs(this.x - object.x) <= thresholdX && Math.abs(this.y - object.y) <= thresholdY;
+    }
+    private float phaseCalc(GameplayObject object) {
+        final float multi = 1f;
+        final float add = 0.5f;
+        final float div = 10f;
+        return multi/(   (  Math.abs(this.x - object.x) )/10f    + 0.5f) + multi/(   (  Math.abs(this.y - object.y) )/10f    + 0.5f);
     }
     private boolean intersectingPredictAnyPlatform(Scene scene, float x, float y) {
         for(Platform platforms : scene.objectsPlatform) {
@@ -56,6 +71,33 @@ public class Player extends GameplayObject {
         return false;
 
     }
+
+//    private boolean moveIntersect(GameplayObject object, float leeway) {
+//
+//        float thresholdX = this.width/2 + object.width/2;
+//        float thresholdY = this.height/2 + object.height/2;
+//
+//        float thisBottom = this.y - this.height/2;
+//        float thisTop = this.y + this.height/2;
+//        float thisLeft = this.x - this.width/2;
+//        float thisRight = this.x + this.width/2;
+//
+//        float platformBottom = object.y - object.height/2;
+//        float platformTop = object.y + object.height/2;
+//        float platformLeft = object.x - object.width/2;
+//        float platformRight = object.x + object.width/2;
+//
+//        boolean betweenForX = thisBottom < platformTop && thisTop > platformBottom;
+//        boolean betweenForY = thisLeft < platformRight && thisRight > platformLeft;
+//
+//        //Establishes several variables to be used for collision checks.
+//
+//        boolean addIntersect = false;
+//
+//        if(Math.min(this.x,previousX) + thresholdX - leeway <= object.x && object.x <= Math.max(this.x,previousX) + thresholdX + leeway && betweenForX) return true;
+//
+//        return false;
+//    }
 
 
     public void tick(Scene scene) {
@@ -154,6 +196,8 @@ public class Player extends GameplayObject {
         //If the player is on the floor with normal gravity, set them to resting. Otherwise, makes it false.
         //If the player is on the ceiling with inverted gravity, set them to resting. Otherwise, makes it false.
 
+        intersectCount = new ArrayList<Platform>();
+
         for(Platform x : scene.objectsPlatform) { //Iterates through every platform in the scene.
             float thresholdX = this.width/2 + x.width/2;
             float thresholdY = this.height/2 + x.height/2;
@@ -173,6 +217,7 @@ public class Player extends GameplayObject {
 
             //Establishes several variables to be used for collision checks.
 
+            //Traditional collision:
             float leeway = 5;
             if(Math.min(this.x,previousX) + thresholdX - leeway <= x.x && x.x <= Math.max(this.x,previousX) + thresholdX + leeway && betweenForX) {
                 this.x = Math.min(this.x,x.x - thresholdX - 0.5f);
@@ -199,6 +244,27 @@ public class Player extends GameplayObject {
                     x.moveBind = this;
                 }
             }
+
+            //Collision to handle phasing:
+            if(intersecting(x, -2f)) {
+                intersectCount.add(x);
+            }
+        }
+
+
+
+        if(!intersectCount.isEmpty()) {
+            float totalX = 0;
+            float totalY = 0;
+            for(Platform x : intersectCount) {
+                totalX += 12*(this.x - x.x)/Math.max(x.width,40);
+                totalY += 12*(this.y - x.y)/Math.max(x.height,40);
+            }
+            this.x += totalX;
+            this.xVelocity += totalX/12f;
+
+            this.y += totalY;
+            this.yVelocity += totalY/12f;
         }
 
         for (GravityChange pickup : scene.objectsGravity) { //check for collision on gravity change object and changes gravity
